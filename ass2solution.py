@@ -32,20 +32,15 @@ def block_audio(x,blockSize,hopSize,fs):
 
 def extract_spectral_centroid(xb, fs):
     wa = window_audio(xb)
-    #print("wa ",wa)
-    
     centroid = []
     for i in range(wa.shape[0]):
         spgrm = abs(np.fft.fft(wa[i]))
-        idxs = np.arange(spgrm.shape[0])
-        ctrd = sum(idxs*spgrm)/sum(spgrm)
+        #idxs = np.arange(spgrm.shape[0])
+        #ctrd = sum(idxs*spgrm)/sum(spgrm)
 
-        normalized_spectrum = spgrm / sum(spgrm)  # like a probability mass function
+        normalized_spectrum = spgrm / sum(spgrm)  
         normalized_frequencies = np.linspace(0, 1, len(spgrm))
         spectral_centroid = sum(normalized_frequencies * normalized_spectrum)
-
-        #print("ctrd ",spectral_centroid)
-        #print('ws ',weighted_sum.shape)
         centroid.append(spectral_centroid)
         #centroid.append(sum(idxs*spgrm)/sum(spgrm))
     # avoid NaN for silence frames
@@ -81,7 +76,6 @@ def extract_spectral_crest(xb):
     crests = []
     for i in range(wa.shape[0]):
         spgrm = abs(np.fft.fft(wa[i]))
-    
         crests.append(np.max(spgrm)/sum(spgrm))
     crests = np.asarray(crests)
     return crests
@@ -93,9 +87,7 @@ def extract_spectral_flux(xb):
     for i in range(wa.shape[0]):
         spgrm = abs(np.fft.fft(wa[i]))
         delta = np.diff(spgrm)
-        #print("delta ",delta,delta.shape)
         flux = np.sqrt(np.sum(np.power(delta,2)))/delta.shape[0]
-        #print("flux ",flux)
         fluxs.append(flux)
     fluxs = np.asarray(fluxs)
     return fluxs
@@ -113,7 +105,7 @@ def extract_features(x, blockSize, hopSize, fs):
 def aggregate_feature_per_file(features):
     agg_features = np.zeros(features.shape[0]*2)
     for i in range(features.shape[0]):
-        agg_features[i] = np.mean(features[i])
+        agg_features[i * 2] = np.mean(features[i])
         agg_features[i * 2 + 1] = np.std(features[i])
     return agg_features
 
@@ -147,46 +139,56 @@ def visualize_features(path_to_musicspeech):
     plt_vector = []
     fig, ax = plt.subplots()
     # sc mean
-    plt.scatter(xaxis_range,normalized_files[0,:,0],label='Speech:SCmean')
-    plt.scatter(xaxis_range,normalized_files[1,:,0],label='Music:SCmean')
+    plt.scatter(normalized_files[0,:,0],normalized_files[0,:,6],color='blue',label='Speech')
+    #plt.scatter(xaxis_range,normalized_files[1,:,0],label='Music:SCmean')
     #scr mean
-    plt.scatter(xaxis_range,normalized_files[0,:,6],label='Speech:SCRmean')
-    plt.scatter(xaxis_range,normalized_files[1,:,6],label='Music:SCRmean')
+    plt.scatter(normalized_files[1,:,0],normalized_files[1,:,6],color='red',label='Music')
+    #plt.scatter(xaxis_range,normalized_files[1,:,6],label='Music:SCRmean')
+    plt.xlabel("Spectral Centroid Mean")
+    plt.ylabel("Spectral Crest Mean")
     plt.legend()
     plt.show()
     # SF mean
-    plt.scatter(xaxis_range,normalized_files[0,:,8],label='Speech:SFmean')
-    plt.scatter(xaxis_range,normalized_files[1,:,8],label='Music:SFmean')
+    plt.scatter(normalized_files[0,:,8],normalized_files[0,:,4],color='blue',label='Speech')
+    #plt.scatter(xaxis_range,normalized_files[1,:,8],label='Music:SFmean')
     # ZCR mean
-    plt.scatter(xaxis_range,normalized_files[0,:,4],label='Speech:ZCRmean')
-    plt.scatter(xaxis_range,normalized_files[1,:,4],label='Music:ZCRmean')
+    plt.scatter(normalized_files[1,:,8],normalized_files[1,:,4],color='red',label='Music')
+    #plt.scatter(xaxis_range,normalized_files[1,:,4],label='Music:ZCRmean')
+    plt.xlabel("Spectral Flux Mean")
+    plt.ylabel("Zero Crossing Rate Mean")
     plt.legend()
     plt.show()
     # RMS mean
-    plt.scatter(xaxis_range,normalized_files[0,:,2],label='Speech:RMSmean')
-    plt.scatter(xaxis_range,normalized_files[1,:,2],label='Music:RMSmean')
+    plt.scatter(normalized_files[0,:,2],normalized_files[0,:,3],color='blue',label='Speech')
+    #plt.scatter(xaxis_range,normalized_files[1,:,2],label='Music:RMSmean')
     # RMS std
-    plt.scatter(xaxis_range,normalized_files[0,:,3],label='Speech:RMSstd')
-    plt.scatter(xaxis_range,normalized_files[1,:,3],label='Music:RMSstd')
+    plt.scatter(normalized_files[1,:,2],normalized_files[1,:,3],color='red',label='Music')
+    #plt.scatter(xaxis_range,normalized_files[1,:,3],label='Music:RMSstd')
+    plt.xlabel("RMS Mean")
+    plt.ylabel("RMS STD")
     plt.legend()
     plt.show()
     # ZCR std
-    plt.scatter(xaxis_range,normalized_files[0,:,5],label='Speech:ZCRstd')
-    plt.scatter(xaxis_range,normalized_files[1,:,5],label='Music:ZCRstd')
+    plt.scatter(normalized_files[0,:,5],normalized_files[0,:,7],color='blue',label='Speech')
+    #plt.scatter(xaxis_range,normalized_files[1,:,5],label='Music:ZCRstd')
     # SCR std
-    plt.scatter(xaxis_range,normalized_files[0,:,7],label='Speech:SCRstd')
-    plt.scatter(xaxis_range,normalized_files[1,:,7],label='Music:SCRstd')
+    plt.scatter(normalized_files[1,:,5],normalized_files[1,:,7],color='red',label='Music')
+    #plt.scatter(xaxis_range,normalized_files[1,:,7],label='Music:SCRstd')
+    plt.xlabel("Zero Crossing Rate STD")
+    plt.ylabel("Spectral Crest STD")
     plt.legend()
     plt.show()
     # SC std
-    plt.scatter(xaxis_range,normalized_files[0,:,1],label='Speech:SCstd')
-    plt.scatter(xaxis_range,normalized_files[1,:,1],label='Music:SCstd')
+    plt.scatter(normalized_files[0,:,1],normalized_files[0,:,9],color='blue',label='Speech')
+    #plt.scatter(xaxis_range,normalized_files[1,:,1],label='Music:SCstd')
     # SF std
-    plt.scatter(xaxis_range,normalized_files[0,:,9],label='Speech:SFstd')
-    plt.scatter(xaxis_range,normalized_files[1,:,9],label='Music:SFstd')
+    plt.scatter(normalized_files[1,:,1],normalized_files[1,:,9],color='red',label='Music')
+    #plt.scatter(xaxis_range,normalized_files[1,:,9],label='Music:SFstd')
+    plt.xlabel("Spectral Crest STD")
+    plt.ylabel("Spectral Flux STD")
     plt.legend()
     plt.show()
-    plt_vector = np.asarray(plt_vector)
+    #plt_vector = np.asarray(plt_vector)
     #for feat in range(plt_vector.shape[0]):
     # xaxis = range(normalized_files.shape[1])
     # for i in range(4):
