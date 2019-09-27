@@ -88,14 +88,17 @@ def extract_spectral_crest(xb):
 
 def extract_spectral_flux(xb):
     wa = window_audio(xb)
-    spgrm = np.fft.fft(wa)
+    
     fluxs = []
-    for i in range(spgrm.shape[0]):
-        delta = np.diff(spgrm[i])
+    for i in range(wa.shape[0]):
+        spgrm = abs(np.fft.fft(wa[i]))
+        delta = np.diff(spgrm)
+        #print("delta ",delta,delta.shape)
         flux = np.sqrt(np.sum(np.power(delta,2)))/delta.shape[0]
+        #print("flux ",flux)
         fluxs.append(flux)
     fluxs = np.asarray(fluxs)
-    return flux
+    return fluxs
 
 def extract_features(x, blockSize, hopSize, fs):
     xb,t = block_audio(x,blockSize,hopSize,fs)
@@ -139,22 +142,61 @@ def visualize_features(path_to_musicspeech):
             feature_files.append(get_feature_data(path_to_musicspeech + '/' + file,1024,256))
     feature_files = np.asarray(feature_files)
     normalized_files = normalize_zscore(feature_files)
-    print(normalized_files.shape)   
+    print(normalized_files.shape) 
+    xaxis_range = np.arange(normalized_files.shape[1]) 
     plt_vector = []
-    plt_vector.append(normalized_files[0,:,0])
-    print('ctd ',normalized_files[0,:,0])
-    plt_vector.append(normalized_files[0,:,3])
-    plt_vector.append(normalized_files[1,:,0])
-    print('ctd2 ',normalized_files[1,:,0])
-    plt_vector.append(normalized_files[1,:,3])
+    fig, ax = plt.subplots()
+    # sc mean
+    plt.scatter(xaxis_range,normalized_files[0,:,0],label='Speech:SCmean')
+    plt.scatter(xaxis_range,normalized_files[1,:,0],label='Music:SCmean')
+    #scr mean
+    plt.scatter(xaxis_range,normalized_files[0,:,6],label='Speech:SCRmean')
+    plt.scatter(xaxis_range,normalized_files[1,:,6],label='Music:SCRmean')
+    plt.legend()
+    plt.show()
+    # SF mean
+    plt.scatter(xaxis_range,normalized_files[0,:,8],label='Speech:SFmean')
+    plt.scatter(xaxis_range,normalized_files[1,:,8],label='Music:SFmean')
+    # ZCR mean
+    plt.scatter(xaxis_range,normalized_files[0,:,4],label='Speech:ZCRmean')
+    plt.scatter(xaxis_range,normalized_files[1,:,4],label='Music:ZCRmean')
+    plt.legend()
+    plt.show()
+    # RMS mean
+    plt.scatter(xaxis_range,normalized_files[0,:,2],label='Speech:RMSmean')
+    plt.scatter(xaxis_range,normalized_files[1,:,2],label='Music:RMSmean')
+    # RMS std
+    plt.scatter(xaxis_range,normalized_files[0,:,3],label='Speech:RMSstd')
+    plt.scatter(xaxis_range,normalized_files[1,:,3],label='Music:RMSstd')
+    plt.legend()
+    plt.show()
+    # ZCR std
+    plt.scatter(xaxis_range,normalized_files[0,:,5],label='Speech:ZCRstd')
+    plt.scatter(xaxis_range,normalized_files[1,:,5],label='Music:ZCRstd')
+    # SCR std
+    plt.scatter(xaxis_range,normalized_files[0,:,7],label='Speech:SCRstd')
+    plt.scatter(xaxis_range,normalized_files[1,:,7],label='Music:SCRstd')
+    plt.legend()
+    plt.show()
+    # SC std
+    plt.scatter(xaxis_range,normalized_files[0,:,1],label='Speech:SCstd')
+    plt.scatter(xaxis_range,normalized_files[1,:,1],label='Music:SCstd')
+    # SF std
+    plt.scatter(xaxis_range,normalized_files[0,:,9],label='Speech:SFstd')
+    plt.scatter(xaxis_range,normalized_files[1,:,9],label='Music:SFstd')
+    plt.legend()
+    plt.show()
     plt_vector = np.asarray(plt_vector)
-    print("plt ",plt_vector.shape)
-    #plt_vector = np.reshape(plt_vector,(64,4))
-    print("plt ",plt_vector.shape)
-    for feat in range(plt_vector.shape[0]):
-        plt.plot(range(normalized_files.shape[1]),plt_vector[feat])
-        plt.show()     
+    #for feat in range(plt_vector.shape[0]):
+    # xaxis = range(normalized_files.shape[1])
+    # for i in range(4):
+    #     if i % 2 == 0:
+    #         plt.scatter(plt_vector[i])
+    #     else:
+    #         plt.scatter(plt_vector[i])
+    # plt.show()     
 
 if __name__ == '__main__':
+    # visualize_features('./music_speech')
     visualize_features('/Users/bclark66/Downloads/music_speech')
 
