@@ -190,6 +190,5 @@ def visualize_features(path_to_musicspeech):
     # plt.show()     
 
 if __name__ == '__main__':
-    # visualize_features('./music_speech')
-    visualize_features('/Users/bclark66/Downloads/music_speech')
+    visualize_features('./music_speech')
 
